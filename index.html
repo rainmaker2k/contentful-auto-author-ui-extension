@@ -113,11 +113,13 @@
     <script>
         'use strict';
 
-        const locale = 'nl-NL';
         // When UI Extensions SDK is loaded the callback will be executed.
         window.contentfulExtension.init(initExtension);
 
         function initExtension(api) {
+
+            const locale = api.locales.default;
+
             // "api" is providing an interface documented here:
             // https://github.com/contentful/ui-extensions-sdk/blob/master/docs/ui-extensions-sdk-frontend.md
 
