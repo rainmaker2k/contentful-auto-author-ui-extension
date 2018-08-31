@@ -1,0 +1,6 @@
+{
+  "id": "autoauthor",
+  "name": "Auto Author Field",
+  "srcdoc": "./index.html",
+  "fieldTypes": ["Entry"]
+}

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <!-- UI Extensions CSS -->
+    <link rel="stylesheet" href="https://contentful.github.io/ui-extensions-sdk/cf-extension.css">
+    <!-- UI Extensions SDK -->
+    <script src="https://unpkg.com/contentful-ui-extensions-sdk@3"></script>
+    <style>
+        .ReferenceCard {
+            display: flex;
+            border: 1px solid #d3dce0;
+            border-radius: 2px;
+        }
+
+        .ReferenceCard a,
+        .ReferenceCard a:hover {
+            color: #000;
+        }
+
+        .cardlink {
+            display: block;
+            width: 100%;
+            padding: 14px;
+        }
+
+        .cardcontent {
+            display: flex;
+            margin-top: 4px;
+        }
+
+        .contentheader {
+            font-weight: bold;
+            flex: 1 0 0;
+        }
+
+        .firstLastName {
+            flex: 1 0 0;
+        }
+
+        .profileimage {
+            margin-left: 20px;
+        }
+
+        .userimage {
+            width: 80px;
+            height: 80px;
+        }
+
+        .header {
+            display: flex;
+        }
+
+        .actions {
+            margin-left: 20px;
+            display: flex;
+        }
+
+        .published {
+            color: #14d997
+        }
+
+        .editButton {
+            display: inline-block;
+        }
+
+        .actionButtons {
+            margin-left: 10px;
+        }
+
+        .error {
+            color: #ff0000
+        }
+        .hide {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Custom markup of the UI Extension -->
+    <div class="cf-form-field">
+        <article class="ReferenceCard">
+            <a href="#" class="cardlink">
+                <div class="profileCard">
+                    <div class="header">
+                        <div class="firstLastName">First Lastname</div>
+                        <div class="actions">
+                            <div class="publishStatus">Published?</div>
+                            <div class="actionButtons">
+                                <div class="editButton">
+                                    
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="cardcontent">
+                        <div class="contentheader">Display_name</div>
+                        <div class="profileimage">
+                            <img src="/./.:0" class="userimage" alt="" />
+                        </div>
+                    </div>
+                </div>
+                <div class="error">
+                    Author not found
+                </div>
+            </a>
+        </article>
+    </div>
+
+    <!-- Custom logic of the UI Extension -->
+    <script>
+        'use strict';
+
+        const locale = 'nl-NL';
+        // When UI Extensions SDK is loaded the callback will be executed.
+        window.contentfulExtension.init(initExtension);
+
+        function initExtension(api) {
+            // "api" is providing an interface documented here:
+            // https://github.com/contentful/ui-extensions-sdk/blob/master/docs/ui-extensions-sdk-frontend.md
+
+            // Automatically adjust UI Extension size in the Web App.
+            api.window.startAutoResizer();
+
+            var btnAuthorSelect = document.querySelector('.authorSelector');
+
+            //  The field this UI Extension is assigned to.
+            var field = api.field;
+
+            if (!field.getValue()) {
+                addAuthor();
+                console.log(`Setting the author`);
+            } else {
+                api.space.getEntry(field.getValue().sys.id)
+                    .then((authorEntry) => {
+                        if (authorEntry) {
+                            loadAuthor(authorEntry);
+                        } else {
+                            showError();
+                        }
+                        
+                    });
+            }
+
+            // Handle DOM "onbeforeunload" event.
+            window.addEventListener('onbeforeunload', unloadHandler);
+            document.querySelector('.cardlink').addEventListener('click', selectAuthorHandler);
+
+
+            // Event handler for window unload.
+            function unloadHandler() {
+                window.removeEventListener('onbeforeunload', unloadHandler);
+                document.querySelector('.cardlink').removeEventListener("click", selectAuthorHandler);
+            }
+
+            function selectAuthorHandler(e) {
+                e.preventDefault();
+                api.dialogs.selectSingleEntry({
+                    locale: locale,
+                    contentTypes: ['author']
+                }).then((selectedEntry) => {
+                    loadAuthor(selectedEntry);
+                    field.setValue({
+                        sys: {
+                            linkType: "Entry",
+                            type: "Link",
+                            id: selectedEntry.sys.id
+                        }
+                    });
+                })
+            }
+
+            function addAuthor() {
+                const userEmail = api.user.email;
+
+                api.space.getEntries({
+                    content_type: 'author',
+                    'fields.email': userEmail
+                })
+                .then((result) => {
+                    if (result.items && result.items.length) {
+                        const authorEntry = result.items[0];
+                        //inputEl.value = authorEntry.fields.display_name[locale];
+                        loadAuthor(authorEntry);
+                        field.setValue({
+                            sys: {
+                                linkType: "Entry",
+                                type: "Link",
+                                id: authorEntry.sys.id
+                            }
+                        });
+                    } else {
+                        document.querySelector('.contentheader').textContent = userEmail + ' NOT FOUND';
+                    }
+                });
+            }
+
+            function loadAuthor(authorEntry) {
+                document.querySelector('.error').classList.add('hide');
+                document.querySelector('.profileCard').classList.remove('hide');
+
+                document.querySelector('.contentheader').textContent = authorEntry.fields.display_name[locale];
+                document.querySelector('.firstLastName').textContent = `${authorEntry.fields.first_name[locale]} ${authorEntry.fields.last_name[locale]}`;
+
+                if (authorEntry.fields.profileImage) {
+                    api.space.getAsset(authorEntry.fields.profileImage["nl-NL"].sys.id)
+                        .then((result) => {
+                            document.querySelector('.userimage').setAttribute("src", `${result.fields.file["nl-NL"].url}?w=80&h=80&fit=thumb`);
+                        })
+                } else {
+                    document.querySelector('.userimage').setAttribute("src", '/./.:0');
+                }
+                
+
+                let el = document.querySelector('.publishStatus');
+
+                if (!!authorEntry.sys.publishedVersion) {
+                    el.classList.add("published");
+                    el.textContent = "Published";
+                } else {
+                    el.classList.remove("published");
+                    el.textContent = "Not published";
+                }
+
+            }
+
+            function showError() {
+                document.querySelector('.error').classList.remove('hide');
+                document.querySelector('.profileCard').classList.add('hide');
+                
+            }
+        }
+    </script>
+</body>
+
+</html>
