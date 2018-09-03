@@ -102,8 +102,8 @@
                         </div>
                     </div>
                 </div>
-                <div class="error hide">
-                    Author not found
+                <div class="error">
+                    Author not found. Please make sure an Author entry exists with your e-mail address configured.
                 </div>
             </a>
         </article>
@@ -142,7 +142,6 @@
                         } else {
                             showError();
                         }
-                        
                     });
             }
 
@@ -194,7 +193,7 @@
                             }
                         });
                     } else {
-                        document.querySelector('.contentheader').textContent = userEmail + ' NOT FOUND';
+                        showError();
                     }
                 });
             }
@@ -231,7 +230,6 @@
             function showError() {
                 document.querySelector('.error').classList.remove('hide');
                 document.querySelector('.profileCard').classList.add('hide');
-                
             }
         }
     </script>
