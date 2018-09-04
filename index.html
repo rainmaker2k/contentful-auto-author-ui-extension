@@ -98,7 +98,7 @@
                     <div class="cardcontent">
                         <div class="contentheader">Display_name</div>
                         <div class="profileimage">
-                            <img src="/./.:0" class="userimage" alt="" />
+                            
                         </div>
                     </div>
                 </div>
@@ -208,14 +208,24 @@
                 document.querySelector('.firstLastName').textContent = `${authorEntry.fields.first_name[locale]} ${authorEntry.fields.last_name[locale]}`;
 
                 if (authorEntry.fields.profileImage) {
+                    
                     api.space.getAsset(authorEntry.fields.profileImage["nl-NL"].sys.id)
                         .then((result) => {
-                            document.querySelector('.userimage').setAttribute("src", `${result.fields.file["nl-NL"].url}?w=80&h=80&fit=thumb`);
-                        })
+                            let img = document.querySelector('.userimage'); 
+                            if (!img) {
+                                img = document.createElement("img");
+                                img.classList.add('userimage');
+                                document.querySelector('.profileimage').appendChild(img);
+                            } 
+                        
+                            img.setAttribute("src", `${result.fields.file["nl-NL"].url}?w=80&h=80&fit=thumb`);
+                        });
                 } else {
-                    document.querySelector('.userimage').setAttribute("src", '/./.:0');
+                    let img = document.querySelector('.userimage');
+                    if (img) {
+                        img.parentNode.removeChild(img);
+                    }
                 }
-                
 
                 let el = document.querySelector('.publishStatus');
 
