@@ -162,14 +162,16 @@
                     locale: locale,
                     contentTypes: ['author']
                 }).then((selectedEntry) => {
-                    loadAuthor(selectedEntry);
-                    field.setValue({
-                        sys: {
-                            linkType: "Entry",
-                            type: "Link",
-                            id: selectedEntry.sys.id
-                        }
-                    });
+                    if (selectedEntry) {
+                        loadAuthor(selectedEntry);
+                        field.setValue({
+                            sys: {
+                                linkType: "Entry",
+                                type: "Link",
+                                id: selectedEntry.sys.id
+                            }
+                        });
+                    }
                 })
             }
 
