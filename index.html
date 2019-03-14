@@ -209,7 +209,7 @@
 
                 if (authorEntry.fields.profileImage) {
                     
-                    api.space.getAsset(authorEntry.fields.profileImage["nl-NL"].sys.id)
+                    api.space.getAsset(authorEntry.fields.profileImage[locale].sys.id)
                         .then((result) => {
                             let img = document.querySelector('.userimage'); 
                             if (!img) {
@@ -218,7 +218,7 @@
                                 document.querySelector('.profileimage').appendChild(img);
                             } 
                         
-                            img.setAttribute("src", `${result.fields.file["nl-NL"].url}?w=80&h=80&fit=thumb`);
+                            img.setAttribute("src", `${result.fields.file[locale].url}?w=80&h=80&fit=thumb`);
                         });
                 } else {
                     let img = document.querySelector('.userimage');
